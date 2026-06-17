@@ -51,6 +51,51 @@ A sidebar é montada automaticamente a partir dos dados:
 
 > Avatares sem `category` (ex.: dados antigos) caem no grupo **"Sem categoria"**.
 
+## Deploy na Vercel (site) + Vercel Blob (dados)
+
+A Vercel hospeda **só o site** (estático). O **bot não roda na Vercel** — ele precisa
+de um processo sempre-ligado (sua máquina, um VPS, Railway, Fly.io…). A ponte entre os
+dois é o **Vercel Blob**: o bot sobe o `avatars.json` pra lá a cada mudança e o site lê
+essa URL pública.
+
+### 1. Criar o Blob Store
+
+1. Vercel → **Storage** → **Create** → **Blob**.
+2. Abra o store → copie a variável **`BLOB_READ_WRITE_TOKEN`** (formato `vercel_blob_rw_...`).
+
+### 2. Configurar o bot
+
+1. No `bot-avatares/.env`, preencha `BLOB_READ_WRITE_TOKEN=...`.
+2. Rode o bot. No log do `on_ready` aparece algo como:
+   ```
+   [blob] avatars.json publicado em: https://xxxxxxxx.public.blob.vercel-storage.com/avatars.json
+   ```
+3. **Copie essa URL.**
+
+### 3. Apontar o site para a URL
+
+Em `index.html`, dentro de `componentDidMount`, cole a URL na constante `DATA_URL`:
+
+```js
+const DATA_URL = 'https://xxxxxxxx.public.blob.vercel-storage.com/avatars.json';
+```
+
+(Vazio = usa o `./avatars.json` local, útil em dev.)
+
+### 4. Publicar o site
+
+1. Suba o repositório no GitHub (confirme que `bot-avatares/.env` **não** foi commitado).
+2. Vercel → **Add New → Project** → importe o repo.
+3. **Root Directory:** `codex-vr` · **Framework Preset:** Other · sem build command/output.
+4. Deploy.
+
+Pronto: o bot publica o JSON no Blob, e o site lê de lá. Atualizações aparecem em até
+~1 min (cache do CDN, ajustável via `blob_cache_max_age` no `config.json`). Não é
+preciso republicar o site a cada novo avatar.
+
+> O `DISCORD_TOKEN` e o `BLOB_READ_WRITE_TOKEN` ficam **só no host do bot** (no `.env`),
+> nunca na Vercel.
+
 ## Observações
 
 - O `avatars.json` é só um array JSON; dá pra editar/popular à mão para testar.

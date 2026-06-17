@@ -232,7 +232,10 @@ class Component extends DCLogic {
   state = { avatars: null, loaded: false, query: '', sort: 'recent', selected: '__all__', collapsed: {} };
 
   componentDidMount() {
-    fetch('./avatars.json')
+    // Em produção (Vercel), cole aqui a URL pública do Vercel Blob com o
+    // avatars.json. Deixe vazio para usar o arquivo local em dev (./avatars.json).
+    const DATA_URL = '';
+    fetch(DATA_URL || './avatars.json', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => this.setState({ avatars: Array.isArray(data) ? data : [], loaded: true }))
       .catch(() => this.setState({ avatars: this.fallback(), loaded: true }));
