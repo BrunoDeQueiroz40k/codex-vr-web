@@ -96,7 +96,8 @@
           CATEGORIAS</div>
 
         <nav style="flex:1;overflow-y:auto;padding:0 10px 10px 10px">
-          <button onClick="{{ allEntry.onClick }}" style="{{ allEntry.style }}">
+          <button onClick="{{ allEntry.onClick }}" style="{{ allEntry.style }}"
+            style-hover="background:rgba(255,255,255,0.06)!important">
             <span style="{{ allEntry.dot }}"></span>
             <span style="flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{
               allEntry.name }}</span>
@@ -104,7 +105,8 @@
           </button>
 
           <sc-for list="{{ sidebarRows }}" as="r" hint-placeholder-count="12">
-            <button onClick="{{ r.onClick }}" style="{{ r.style }}">
+            <button onClick="{{ r.onClick }}" style="{{ r.style }}"
+              style-hover="background:rgba(255,255,255,0.06)!important">
               <span style="{{ r.chevron }}">{{ r.chevronChar }}</span>
               <span style="{{ r.dot }}"></span>
               <span style="flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name
@@ -268,9 +270,14 @@ class Component extends DCLogic {
 
   setSort(key) { this.setState({ sort: key }); }
   setFilter(key) { this.setState({ selected: key }); }
-  toggleCat(key) {
+  isExpanded(catKey, index) {
+    const c = this.state.collapsed;
+    // por padrão só a primeira categoria fica aberta; o resto, recolhido
+    return (catKey in c) ? !c[catKey] : index === 0;
+  }
+  toggleCat(catKey, index) {
     const c = Object.assign({}, this.state.collapsed);
-    c[key] = !c[key];
+    c[catKey] = this.isExpanded(catKey, index); // inverte o estado atual
     this.setState({ collapsed: c });
   }
 
@@ -338,10 +345,15 @@ class Component extends DCLogic {
     if (this.state.sort === 'az') list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
     else list.sort((a, b) => new Date(b.added_at || 0) - new Date(a.added_at || 0));
 
-    // ---- estilos compartilhados da sidebar ----
-    const dot = (color, active) => ({ width: '9px', height: '9px', flex: '0 0 auto', background: color, boxShadow: active ? '0 0 7px ' + color : 'none' });
+    // ---- estilos da sidebar (navbar neutro; dourado só como indicador do ativo) ----
     const noChevron = { display: 'none' };
     const noDot = { display: 'none' };
+    const ACTIVE_BG = 'rgba(255,255,255,0.05)';
+    const RAIL = 'rgba(255,255,255,0.10)';   // trilho/barrinha neutra (presente em todos)
+    const itemCount = (active) => ({
+      fontFamily: "'JetBrains Mono', monospace", fontSize: '10px',
+      color: active ? accent : '#6f7d9c', minWidth: '18px', textAlign: 'right'
+    });
 
     // ---- "Todos os Avatares" ----
     const allActive = selected === '__all__';
@@ -351,68 +363,63 @@ class Component extends DCLogic {
       style: {
         display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
         padding: '9px 11px', cursor: 'pointer', border: 'none',
-        borderLeft: '3px solid ' + (allActive ? accent : 'transparent'),
-        background: allActive ? 'rgba(200,164,74,0.12)' : 'transparent',
-        color: allActive ? '#f0e9d6' : '#c2ccdf', textAlign: 'left',
+        borderLeft: '2px solid ' + (allActive ? accent : RAIL),
+        background: allActive ? ACTIVE_BG : 'transparent',
+        color: allActive ? '#eef3fb' : '#b8c2d6', textAlign: 'left',
         fontFamily: "'Barlow Semi Condensed', sans-serif", fontSize: '14px',
         fontWeight: 600, letterSpacing: '.3px', transition: 'background .12s'
       },
-      dot: dot(accent, allActive),
-      countStyle: {
-        fontFamily: "'JetBrains Mono', monospace", fontSize: '10.5px',
-        color: allActive ? accent : '#62708d', minWidth: '20px', textAlign: 'right'
-      }
+      dot: noDot,
+      countStyle: itemCount(allActive)
     };
 
-    // ---- linhas achatadas: CATEGORIA (faixa colorida em destaque) + CANAIS aninhados ----
+    // ---- categoria (cabeçalho de seção sóbrio) + canais indentados (árvore) ----
     const sidebarRows = [];
     categories.forEach((cat, i) => {
-      const expanded = !this.state.collapsed[cat.key];
-      // cabeçalho da categoria: faixa com a cor da categoria, negrito e maiúsculas
+      const expanded = this.isExpanded(cat.key, i);
+      // categoria "ativa" = é a dona do canal selecionado (ganha um leve dourado)
+      const catActive = cat.channelsArr.some(ch => ch.key === selected);
       sidebarRows.push({
         name: cat.name, count: cat.count,
-        onClick: () => this.toggleCat(cat.key),
+        onClick: () => this.toggleCat(cat.key, i),
         style: {
-          display: 'flex', alignItems: 'center', gap: '9px', width: '100%',
-          margin: (i === 0 ? '6px' : '14px') + ' 0 3px 0',
-          padding: '8px 9px 8px 10px', cursor: 'pointer', border: 'none',
-          borderLeft: '3px solid ' + cat.color,
-          background: cat.color + '24',
-          color: '#eef3fb', textAlign: 'left',
-          fontFamily: "'JetBrains Mono', monospace", fontSize: '11.5px',
-          fontWeight: 600, letterSpacing: '1.4px', textTransform: 'uppercase',
+          display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+          margin: (i === 0 ? '6px' : '14px') + ' 0 2px 0',
+          padding: '7px 10px', cursor: 'pointer', border: 'none',
+          borderLeft: '2px solid ' + (catActive ? accent : RAIL),
+          background: catActive ? 'rgba(200,164,74,0.07)' : 'transparent',
+          color: catActive ? '#dcc98c' : '#b8c2d6', textAlign: 'left',
+          fontFamily: "'JetBrains Mono', monospace", fontSize: '11px',
+          fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase',
           transition: 'background .12s'
         },
-        chevron: { display: 'inline-block', width: '12px', flex: '0 0 auto', fontSize: '9px', color: '#cdd6e8', textAlign: 'center' },
+        chevron: { display: 'inline-block', width: '11px', flex: '0 0 auto', fontSize: '9px', color: catActive ? accent : '#8a96b0', textAlign: 'center' },
         chevronChar: expanded ? '▾' : '▸',
         dot: noDot,
         countStyle: {
-          fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', fontWeight: 700,
-          color: '#0a1428', background: cat.color, padding: '1px 7px', borderRadius: '9px',
-          minWidth: '16px', textAlign: 'center'
+          fontFamily: "'JetBrains Mono', monospace", fontSize: '10px',
+          color: '#6f7d9c', minWidth: '18px', textAlign: 'right'
         }
       });
-      // canais da categoria: indentados, com prefixo "#" e trilho na cor da categoria
+      // canais: indentados (afastados) mas preenchendo o resto da largura
       if (expanded) cat.channelsArr.forEach(ch => {
         const active = selected === ch.key;
         sidebarRows.push({
           name: '# ' + ch.name, count: ch.count,
           onClick: () => this.setFilter(ch.key),
           style: {
-            display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
-            padding: '6px 11px 6px 22px', cursor: 'pointer', border: 'none',
-            borderLeft: '2px solid ' + (active ? accent : cat.color + '55'),
-            background: active ? 'rgba(200,164,74,0.10)' : 'transparent',
-            color: active ? '#f0e9d6' : '#9aa6c0', textAlign: 'left',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            marginLeft: '15px', width: 'calc(100% - 15px)',
+            padding: '6px 10px', cursor: 'pointer', border: 'none',
+            borderLeft: '2px solid ' + (active ? accent : RAIL),
+            background: active ? ACTIVE_BG : 'transparent',
+            color: active ? '#eef3fb' : '#a6b2cb', textAlign: 'left',
             fontFamily: "'Barlow Semi Condensed', sans-serif", fontSize: '13.5px',
             letterSpacing: '.2px', transition: 'background .12s'
           },
           chevron: noChevron, chevronChar: '',
           dot: noDot,
-          countStyle: {
-            fontFamily: "'JetBrains Mono', monospace", fontSize: '10px',
-            color: active ? accent : '#62708d', minWidth: '18px', textAlign: 'right'
-          }
+          countStyle: itemCount(active)
         });
       });
     });
