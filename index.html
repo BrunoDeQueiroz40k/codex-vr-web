@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./support.js"></script>
+</head>
+
+<body>
+  <x-dc>
+    <helmet>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+      <style>
+        * {
+          box-sizing: border-box
+        }
+
+        html,
+        body {
+          margin: 0
+        }
+
+        input::placeholder {
+          color: #54627e
+        }
+
+        ::-webkit-scrollbar {
+          width: 10px;
+          height: 10px
+        }
+
+        ::-webkit-scrollbar-track {
+          background: #070d1a
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: #1a2949;
+          border: 2px solid #070d1a
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: #26396a
+        }
+
+        @keyframes omegaGlow {
+
+          0%,
+          100% {
+            filter: drop-shadow(0 0 3px rgba(200, 164, 74, 0.25))
+          }
+
+          50% {
+            filter: drop-shadow(0 0 7px rgba(200, 164, 74, 0.55))
+          }
+        }
+      </style>
+    </helmet>
+
+    <div
+      style="position:relative;min-height:100vh;background:#070d1a;color:#d9e2f0;font-family:'Barlow Semi Condensed',sans-serif">
+
+      <div
+        style="position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(1100px 560px at 72% -8%, rgba(31,79,156,0.20), transparent 62%), repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0 1px, transparent 1px 64px), repeating-linear-gradient(90deg, rgba(255,255,255,0.014) 0 1px, transparent 1px 64px)">
+      </div>
+
+      <aside
+        style="position:fixed;top:0;left:0;width:290px;height:100vh;z-index:2;display:flex;flex-direction:column;background:linear-gradient(180deg,#0a1428,#080f1f);border-right:1px solid rgba(200,164,74,0.18)">
+        <div
+          style="display:flex;align-items:center;gap:13px;padding:22px 22px 18px 22px;border-bottom:1px solid rgba(200,164,74,0.14)">
+          <div
+            style="width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(200,164,74,0.55);background:rgba(200,164,74,0.05);animation:omegaGlow 4.5s ease-in-out infinite">
+            <img src="./ultra.png" width="24" height="24" alt="Codex VR" style="object-fit:contain" />
+          </div>
+          <div style="line-height:1.1">
+            <div style="font-family:'Cinzel',serif;font-weight:700;font-size:19px;letter-spacing:3px;color:#e8dcb8">
+              CODEX VR</div>
+            <div
+              style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:#6f7d9c;margin-top:3px">
+              ULTRAMAR &middot; REGISTRO VRCHAT</div>
+          </div>
+        </div>
+
+        <div style="padding:16px 18px 6px 18px">
+          <input value="{{ query }}" onChange="{{ onSearch }}" placeholder="Buscar avatar, autor, tag&hellip;"
+            style="width:100%;background:#0c1730;border:1px solid rgba(200,164,74,0.18);color:#d9e2f0;padding:9px 12px;font-family:'Barlow Semi Condensed',sans-serif;font-size:14px;outline:none" />
+        </div>
+
+        <div
+          style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;color:#6f7d9c;padding:14px 22px 6px 22px">
+          CATEGORIAS</div>
+
+        <nav style="flex:1;overflow-y:auto;padding:0 10px 10px 10px">
+          <button onClick="{{ allEntry.onClick }}" style="{{ allEntry.style }}">
+            <span style="{{ allEntry.dot }}"></span>
+            <span style="flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{
+              allEntry.name }}</span>
+            <span style="{{ allEntry.countStyle }}">{{ allEntry.count }}</span>
+          </button>
+
+          <sc-for list="{{ sidebarRows }}" as="r" hint-placeholder-count="12">
+            <button onClick="{{ r.onClick }}" style="{{ r.style }}">
+              <span style="{{ r.chevron }}">{{ r.chevronChar }}</span>
+              <span style="{{ r.dot }}"></span>
+              <span style="flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name
+                }}</span>
+              <span style="{{ r.countStyle }}">{{ r.count }}</span>
+            </button>
+          </sc-for>
+        </nav>
+
+        <div
+          style="padding:13px 22px;border-top:1px solid rgba(200,164,74,0.14);font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;color:#566173">
+          {{ total }} AVATARES</div>
+      </aside>
+
+      <main style="margin-left:290px;position:relative;z-index:1;min-height:100vh;padding:38px 46px 60px 46px">
+
+        <div
+          style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid rgba(200,164,74,0.16)">
+          <div>
+            <div
+              style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3.5px;color:#a98f48;margin-bottom:9px">
+              {{ currentKicker }}</div>
+            <h1
+              style="margin:0;font-family:'Cinzel',serif;font-weight:700;font-size:33px;letter-spacing:1px;color:#ece3c8">
+              {{ currentTitle }}</h1>
+            <div style="margin-top:8px;font-size:14px;color:#7e8aa3;letter-spacing:.3px">{{ resultLabel }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <span
+              style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:#6f7d9c">ORDEM</span>
+            <div style="display:flex;border:1px solid rgba(200,164,74,0.28)">
+              <sc-for list="{{ sortModes }}" as="s" hint-placeholder-count="2">
+                <button onClick="{{ s.onClick }}" style="{{ s.style }}">{{ s.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;place-items:center;min-height:50vh;text-align:center">
+            <div>
+              <img src="./ultra.png" width="46" height="46" alt="" style="object-fit:contain;opacity:.55" />
+              <div
+                style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:#566173;margin-top:10px">
+                CARREGANDO CODEX VR&hellip;</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+          <div style="{{ gridStyle }}">
+            <sc-for list="{{ cards }}" as="card" hint-placeholder-count="9">
+              <a href="{{ card.url }}" target="_blank" rel="noopener"
+                style="position:relative;display:flex;flex-direction:column;text-decoration:none;color:inherit;background:linear-gradient(180deg,#0c1730,#0a142a);border:1px solid rgba(200,164,74,0.16);overflow:hidden;transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease"
+                style-hover="transform:translateY(-4px);border-color:rgba(200,164,74,0.6);box-shadow:0 16px 34px rgba(0,0,0,0.55), 0 0 0 1px rgba(200,164,74,0.12)">
+                <div
+                  style="height:2px;background:linear-gradient(90deg, transparent, rgba(200,164,74,0.7), transparent)">
+                </div>
+                <div
+                  style="position:relative;aspect-ratio:4/3;background:#0a1428;overflow:hidden;border-bottom:1px solid rgba(200,164,74,0.12)">
+                  <div style="{{ card.imgStyle }}"></div>
+                  <div style="{{ card.badge }}"><span style="{{ card.badgeDot }}"></span>{{ card.category }}</div>
+                  <div
+                    style="position:absolute;top:9px;right:9px;width:27px;height:27px;display:grid;place-items:center;background:rgba(7,13,26,0.72);border:1px solid rgba(200,164,74,0.4)">
+                    <img src="./ultra.png" width="14" height="14" alt="" style="object-fit:contain" />
+                  </div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;padding:13px 14px 14px 14px">
+                  <div style="font-weight:700;font-size:16px;line-height:1.25;color:#ece3c8;letter-spacing:.2px">{{
+                    card.title }}</div>
+                  <div
+                    style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:#9c8748;margin-top:5px">
+                    {{ card.authorLabel }}</div>
+                  <sc-if value="{{ card.hasCreator }}" hint-placeholder-val="{{ true }}">
+                    <div
+                      style="font-size:13px;line-height:1.45;color:#93a0ba;margin-top:9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding-bottom:10px">
+                      {{ card.creatorLabel }}</div>
+                  </sc-if>
+                  <sc-if value="{{ card.hasTags }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:11px">
+                      <sc-for list="{{ card.tags }}" as="t" hint-placeholder-count="3">
+                        <span
+                          style="border:1px solid rgba(200,164,74,0.24);color:#a9b5cf;padding:2px 7px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.5px">{{
+                          t }}</span>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <div
+                    style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:11px;border-top:1px solid rgba(255,255,255,0.05)">
+                    <span
+                      style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:#7e8aa3;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                      <span style="{{ card.dotStyle }}"></span>{{ card.channelName }}
+                    </span>
+                    <span
+                      style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#566173;white-space:nowrap">{{
+                      card.dateLabel }}</span>
+                  </div>
+                </div>
+              </a>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;place-items:center;min-height:46vh;text-align:center">
+            <div>
+              <img src="./ultra.png" width="50" height="50" alt="" style="object-fit:contain;opacity:.4" />
+              <div style="font-family:'Cinzel',serif;font-size:19px;color:#8a96b0;margin-top:6px">Nenhum avatar
+                encontrado</div>
+              <div
+                style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:#566173;margin-top:8px">
+                Ajuste a busca ou os filtros</div>
+            </div>
+          </div>
+        </sc-if>
+
+      </main>
+    </div>
+  </x-dc>
+  <script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1200, &quot;height&quot;: 820 },
+  &quot;accentColor&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#c8a44a&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#c8a44a&quot;, &quot;#b8c2d6&quot;, &quot;#3a72c4&quot;] },
+  &quot;density&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;Confortável&quot;, &quot;options&quot;: [&quot;Confortável&quot;, &quot;Compacto&quot;], &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  state = { avatars: null, loaded: false, query: '', sort: 'recent', selected: '__all__', collapsed: {} };
+
+  componentDidMount() {
+    fetch('./avatars.json')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => this.setState({ avatars: Array.isArray(data) ? data : [], loaded: true }))
+      .catch(() => this.setState({ avatars: this.fallback(), loaded: true }));
+  }
+
+  placeholderSrc(color, label) {
+    const safe = String(label || '').replace(/[<>&]/g, '');
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>" +
+      "<defs><pattern id='p' width='16' height='16' patternTransform='rotate(45)' patternUnits='userSpaceOnUse'>" +
+      "<rect width='16' height='16' fill='#0a142a'/><rect width='8' height='16' fill='#0c1933'/></pattern></defs>" +
+      "<rect width='400' height='300' fill='url(#p)'/>" +
+      "<rect x='8' y='8' width='384' height='284' fill='none' stroke='" + color + "' stroke-opacity='0.28'/>" +
+      "<text x='200' y='150' font-family='monospace' font-size='13' letter-spacing='3' fill='#5a6a86' text-anchor='middle'>SEM PREVIEW</text>" +
+      "<text x='200' y='208' font-family='monospace' font-size='10' fill='#3e4b66' text-anchor='middle'>" + safe + "</text>" +
+      "</svg>";
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+
+  fmtDate(iso) {
+    try {
+      return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+        .format(new Date(iso)).replace(/\./g, '').toUpperCase();
+    } catch (e) { return ''; }
+  }
+
+  fallback() {
+    return [];
+  }
+
+  setSort(key) { this.setState({ sort: key }); }
+  setFilter(key) { this.setState({ selected: key }); }
+  toggleCat(key) {
+    const c = Object.assign({}, this.state.collapsed);
+    c[key] = !c[key];
+    this.setState({ collapsed: c });
+  }
+
+  renderVals() {
+    const GOLD = '#c8a44a';
+    const accent = this.props.accentColor || GOLD;
+    const density = this.props.density || 'Confortável';
+    const PALETTE = ['#3a72c4', '#b23636', '#2f7a4f', '#c8a44a', '#6f93a6', '#c45fb0', '#16a5a0', '#d14a2a', '#8c3b4f', '#36a37e', '#97785f', '#4f57a8', '#7d848f'];
+    const NO_CAT = 'Sem categoria';
+
+    const avatars = this.state.avatars || [];
+    const selected = this.state.selected;
+    const q = this.state.query.trim().toLowerCase();
+
+    const channelKeyOf = (a) => 'ch:' + (a.channel_id != null ? a.channel_id : 'n:' + (a.channel || ''));
+    const catKeyOf = (a) => 'cat:' + (a.category_id != null ? a.category_id : (a.category ? 'n:' + a.category : '__none__'));
+
+    // ---- monta a árvore categoria > canal a partir dos dados do Discord ----
+    const catMap = new Map();
+    avatars.forEach(a => {
+      const ck = catKeyOf(a);
+      let cat = catMap.get(ck);
+      if (!cat) {
+        cat = {
+          key: ck, name: a.category || NO_CAT,
+          position: a.category_position != null ? a.category_position : (a.category ? 9998 : 9999),
+          channels: new Map(), count: 0
+        };
+        catMap.set(ck, cat);
+      }
+      cat.count++;
+      const chk = channelKeyOf(a);
+      let ch = cat.channels.get(chk);
+      if (!ch) {
+        ch = { key: chk, name: a.channel || '(sem canal)', position: a.channel_position != null ? a.channel_position : 9999, count: 0 };
+        cat.channels.set(chk, ch);
+      }
+      ch.count++;
+    });
+
+    const categories = Array.from(catMap.values())
+      .sort((x, y) => (x.position - y.position) || x.name.localeCompare(y.name));
+    categories.forEach((cat, i) => {
+      cat.color = PALETTE[i % PALETTE.length];
+      cat.channelsArr = Array.from(cat.channels.values())
+        .sort((x, y) => (x.position - y.position) || x.name.localeCompare(y.name));
+    });
+
+    // channelKey -> cor/categoria/canal (pra colorir e rotular os cards)
+    const chMeta = {};
+    categories.forEach(cat => cat.channelsArr.forEach(ch => {
+      chMeta[ch.key] = { color: cat.color, category: cat.name, channel: ch.name };
+    }));
+
+    // ---- filtro + busca + ordenação ----
+    let list = avatars.slice();
+    if (selected !== '__all__') list = list.filter(a => channelKeyOf(a) === selected);
+    if (q) list = list.filter(a =>
+      (a.title || '').toLowerCase().includes(q) ||
+      (a.creator || '').toLowerCase().includes(q) ||
+      (a.posted_by || a.author || '').toLowerCase().includes(q) ||
+      (a.channel || '').toLowerCase().includes(q) ||
+      (a.category || '').toLowerCase().includes(q) ||
+      (a.tags || []).join(' ').toLowerCase().includes(q));
+    if (this.state.sort === 'az') list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    else list.sort((a, b) => new Date(b.added_at || 0) - new Date(a.added_at || 0));
+
+    // ---- estilos compartilhados da sidebar ----
+    const dot = (color, active) => ({ width: '9px', height: '9px', flex: '0 0 auto', background: color, boxShadow: active ? '0 0 7px ' + color : 'none' });
+    const noChevron = { display: 'none' };
+    const noDot = { display: 'none' };
+
+    // ---- "Todos os Avatares" ----
+    const allActive = selected === '__all__';
+    const allEntry = {
+      name: 'Todos os Avatares', count: avatars.length,
+      onClick: () => this.setFilter('__all__'),
+      style: {
+        display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
+        padding: '9px 11px', cursor: 'pointer', border: 'none',
+        borderLeft: '3px solid ' + (allActive ? accent : 'transparent'),
+        background: allActive ? 'rgba(200,164,74,0.12)' : 'transparent',
+        color: allActive ? '#f0e9d6' : '#c2ccdf', textAlign: 'left',
+        fontFamily: "'Barlow Semi Condensed', sans-serif", fontSize: '14px',
+        fontWeight: 600, letterSpacing: '.3px', transition: 'background .12s'
+      },
+      dot: dot(accent, allActive),
+      countStyle: {
+        fontFamily: "'JetBrains Mono', monospace", fontSize: '10.5px',
+        color: allActive ? accent : '#62708d', minWidth: '20px', textAlign: 'right'
+      }
+    };
+
+    // ---- linhas achatadas: CATEGORIA (faixa colorida em destaque) + CANAIS aninhados ----
+    const sidebarRows = [];
+    categories.forEach((cat, i) => {
+      const expanded = !this.state.collapsed[cat.key];
+      // cabeçalho da categoria: faixa com a cor da categoria, negrito e maiúsculas
+      sidebarRows.push({
+        name: cat.name, count: cat.count,
+        onClick: () => this.toggleCat(cat.key),
+        style: {
+          display: 'flex', alignItems: 'center', gap: '9px', width: '100%',
+          margin: (i === 0 ? '6px' : '14px') + ' 0 3px 0',
+          padding: '8px 9px 8px 10px', cursor: 'pointer', border: 'none',
+          borderLeft: '3px solid ' + cat.color,
+          background: cat.color + '24',
+          color: '#eef3fb', textAlign: 'left',
+          fontFamily: "'JetBrains Mono', monospace", fontSize: '11.5px',
+          fontWeight: 600, letterSpacing: '1.4px', textTransform: 'uppercase',
+          transition: 'background .12s'
+        },
+        chevron: { display: 'inline-block', width: '12px', flex: '0 0 auto', fontSize: '9px', color: '#cdd6e8', textAlign: 'center' },
+        chevronChar: expanded ? '▾' : '▸',
+        dot: noDot,
+        countStyle: {
+          fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', fontWeight: 700,
+          color: '#0a1428', background: cat.color, padding: '1px 7px', borderRadius: '9px',
+          minWidth: '16px', textAlign: 'center'
+        }
+      });
+      // canais da categoria: indentados, com prefixo "#" e trilho na cor da categoria
+      if (expanded) cat.channelsArr.forEach(ch => {
+        const active = selected === ch.key;
+        sidebarRows.push({
+          name: '# ' + ch.name, count: ch.count,
+          onClick: () => this.setFilter(ch.key),
+          style: {
+            display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+            padding: '6px 11px 6px 22px', cursor: 'pointer', border: 'none',
+            borderLeft: '2px solid ' + (active ? accent : cat.color + '55'),
+            background: active ? 'rgba(200,164,74,0.10)' : 'transparent',
+            color: active ? '#f0e9d6' : '#9aa6c0', textAlign: 'left',
+            fontFamily: "'Barlow Semi Condensed', sans-serif", fontSize: '13.5px',
+            letterSpacing: '.2px', transition: 'background .12s'
+          },
+          chevron: noChevron, chevronChar: '',
+          dot: noDot,
+          countStyle: {
+            fontFamily: "'JetBrains Mono', monospace", fontSize: '10px',
+            color: active ? accent : '#62708d', minWidth: '18px', textAlign: 'right'
+          }
+        });
+      });
+    });
+
+    const cards = list.map(a => {
+      const meta = chMeta[channelKeyOf(a)] || { color: '#5a6a86', category: a.category || NO_CAT, channel: a.channel || '—' };
+      const color = meta.color;
+      return {
+        url: a.url || '#',
+        title: a.title || 'Sem título',
+        imgStyle: { width: '100%', height: '100%', backgroundImage: 'url("' + (a.image || this.placeholderSrc(color, meta.channel)) + '")', backgroundSize: 'cover', backgroundPosition: 'center' },
+        authorLabel: 'POR ' + String(a.posted_by || a.author || 'desconhecido').toUpperCase(),
+        creator: a.creator || '',
+        creatorLabel: a.creator ? 'Criado por ' + a.creator : '',
+        hasCreator: !!a.creator,
+        tags: a.tags || [],
+        hasTags: !!(a.tags && a.tags.length),
+        category: meta.category,
+        channelName: meta.channel,
+        badge: {
+          position: 'absolute', top: '9px', left: '9px', maxWidth: 'calc(100% - 48px)',
+          display: 'flex', alignItems: 'center', gap: '6px',
+          padding: '3px 8px', background: 'rgba(7,13,26,0.78)', border: '1px solid ' + color,
+          color: '#e6edf7', fontFamily: "'JetBrains Mono', monospace", fontSize: '9px',
+          letterSpacing: '.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+        },
+        badgeDot: { width: '6px', height: '6px', flex: '0 0 auto', background: color },
+        dotStyle: { width: '8px', height: '8px', flex: '0 0 auto', background: color },
+        dateLabel: this.fmtDate(a.added_at)
+      };
+    });
+
+    const sortModes = [{ key: 'recent', label: 'RECENTES' }, { key: 'az', label: 'A–Z' }].map(m => {
+      const active = this.state.sort === m.key;
+      return {
+        label: m.label,
+        onClick: () => this.setSort(m.key),
+        style: {
+          cursor: 'pointer', padding: '7px 15px', border: 'none',
+          fontFamily: "'JetBrains Mono', monospace", fontSize: '10.5px', letterSpacing: '1.5px',
+          background: active ? accent : 'transparent',
+          color: active ? '#0a1428' : '#9aa6c0', fontWeight: active ? 600 : 400
+        }
+      };
+    });
+
+    const compact = density === 'Compacto';
+    const gridStyle = {
+      display: 'grid', marginTop: '22px',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(' + (compact ? '228px' : '274px') + ', 1fr))',
+      gap: compact ? '16px' : '22px'
+    };
+
+    let currentTitle = 'Todos os Avatares';
+    let currentKicker = 'CODEX VR \u00B7 REGISTRO DE AVATARES';
+    if (selected !== '__all__' && chMeta[selected]) {
+      currentTitle = chMeta[selected].channel;
+      currentKicker = (chMeta[selected].category || '').toUpperCase() || currentKicker;
+    }
+
+    return {
+      query: this.state.query,
+      onSearch: (e) => this.setState({ query: e.target.value }),
+      total: avatars.length,
+      allEntry,
+      sidebarRows,
+      currentKicker,
+      currentTitle,
+      resultLabel: list.length === 1 ? '1 avatar catalogado' : list.length + ' avatares catalogados',
+      sortModes,
+      gridStyle,
+      cards,
+      loading: !this.state.loaded,
+      hasResults: this.state.loaded && list.length > 0,
+      isEmpty: this.state.loaded && list.length === 0
+    };
+  }
+}
+</script>
+</body>
+
+</html>
